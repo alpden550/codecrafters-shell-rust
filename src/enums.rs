@@ -13,7 +13,7 @@ pub enum BuiltInCommand {
 impl fmt::Display for BuiltInCommand {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            BuiltInCommand::Exit => write!(f, "exit"),
+            BuiltInCommand::Exit => write!(f, "exit 0"),
         }
     }
 }
@@ -23,7 +23,7 @@ impl FromStr for BuiltInCommand {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "exit" => Ok(BuiltInCommand::Exit),
+            "exit 0" => Ok(BuiltInCommand::Exit),
             _ => Err(()),
         }
     }
