@@ -1,3 +1,6 @@
+mod enums;
+
+use enums::{BuiltInCommand, StatusCodes};
 use std::io::{self, Write};
 
 fn main() {
@@ -19,9 +22,8 @@ fn repl() {
 }
 
 fn execute_command(command: &str) {
-    match command {
-        _ => {
-            println!("{}: command not found", command);
-        }
+    match command.parse::<BuiltInCommand>() {
+        Ok(BuiltInCommand::Exit) => std::process::exit(StatusCodes::Success as i32),
+        Err(_) => println!("Command not found: {}", command),
     }
 }
