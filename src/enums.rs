@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 #[repr(u8)]
 pub enum StatusCodes {
-    Success(()) = 0,
+    Success = 0,
 }
 
 pub enum BuiltInCommand {
