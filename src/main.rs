@@ -1,4 +1,3 @@
-#[allow(unused_imports)]
 use std::io::{self, Write};
 
 fn main() {
@@ -9,4 +8,14 @@ fn main() {
     let stdin = io::stdin();
     let mut input = String::new();
     stdin.read_line(&mut input).unwrap();
+
+    execute_command(input.trim());
+}
+
+fn execute_command(command: &str) {
+    match command {
+        _ => {
+            println!("{}: not found", command);
+        }
+    }
 }
