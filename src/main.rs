@@ -24,6 +24,6 @@ fn repl() {
 fn execute_command(command: &str) {
     match command.parse::<BuiltInCommand>() {
         Ok(BuiltInCommand::Exit) => std::process::exit(StatusCodes::Success as i32),
-        Err(_) => println!("Command not found: {}", command),
+        Err(_) => println!("{}: Command not found", command),
     }
 }
