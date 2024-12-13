@@ -4,8 +4,7 @@ mod enums;
 use enums::BuiltInCommand;
 use std::path::PathBuf;
 use std::{
-    env,
-    fs,
+    env, fs,
     io::{self, Write},
     path::Path,
 };
@@ -50,7 +49,17 @@ fn execute_command(command: &str) {
             println!("{}", path.display());
         }
         Ok(BuiltInCommand::Cd(path)) => {
-            env::set_current_dir(&path).unwrap_or_else(|e| {
+            if path == "~" {
+                match env::var("HOME") {
+                    Ok(h) => env::set_current_dir(h).unwrap_or_else(|_| {
+                        eprintln!("HOME not set");
+                    }),
+                    Err(_) => eprintln!("HOME not set"),
+                }
+                return;
+            }
+
+            env::set_current_dir(&path).unwrap_or_else(|_| {
                 eprintln!("{}: No such file or directory", path);
             });
         }
