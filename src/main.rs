@@ -28,10 +28,6 @@ fn repl() {
 }
 
 fn execute_command(command: &str) {
-    if execute_external_command(command).is_ok()  {
-        return;
-    }
-
     match command.parse::<BuiltInCommand>() {
         Ok(BuiltInCommand::Exit(code)) => std::process::exit(code),
         Ok(BuiltInCommand::Echo(message)) => println!("{}", message),
@@ -45,7 +41,18 @@ fn execute_command(command: &str) {
                 }
             }
         }
-        Err(_) => println!("{}: not found", command),
+        Ok(BuiltInCommand::Pwd) => {
+            let path = std::env::current_dir().unwrap_or_else(|e| {
+                eprintln!("Error getting current directory: {}", e);
+                PathBuf::new()
+            });
+            println!("{}", path.display());
+        }
+        Err(_) => {
+            if let Err(_) = execute_external_command(command) {
+                println!("{}: command not found", command);
+            }
+        }
     }
 }
 
