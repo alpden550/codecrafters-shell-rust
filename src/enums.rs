@@ -11,6 +11,7 @@ pub enum StatusCodes {
 pub enum BuiltInCommand {
     Exit(i32),
     Echo(String),
+    Type(String),
 }
 
 impl fmt::Display for BuiltInCommand {
@@ -18,6 +19,7 @@ impl fmt::Display for BuiltInCommand {
         match self {
             BuiltInCommand::Exit(c) => write!(f, "exit {c}"),
             BuiltInCommand::Echo(s) => write!(f, "echo {s}"),
+            BuiltInCommand::Type(s) => write!(f, "type {s}"),
         }
     }
 }
@@ -34,6 +36,7 @@ impl FromStr for BuiltInCommand {
                 Ok(BuiltInCommand::Exit(code))
             }
             ["echo", message @ ..] => Ok(BuiltInCommand::Echo(message.join(" "))),
+            ["type", message @ ..] => Ok(BuiltInCommand::Type(message.join(" "))),
             _ => Err(()),
         }
     }
