@@ -13,6 +13,7 @@ pub enum BuiltInCommand {
     Echo(String),
     Type(String),
     Pwd,
+    Cd(String),
 }
 
 impl fmt::Display for BuiltInCommand {
@@ -22,6 +23,7 @@ impl fmt::Display for BuiltInCommand {
             BuiltInCommand::Echo(s) => write!(f, "echo {s}"),
             BuiltInCommand::Type(s) => write!(f, "type {s}"),
             BuiltInCommand::Pwd => write!(f, "pwd"),
+            BuiltInCommand::Cd(s) => write!(f, "cd {s}"),
         }
     }
 }
@@ -40,6 +42,7 @@ impl FromStr for BuiltInCommand {
             ["echo", message @ ..] => Ok(BuiltInCommand::Echo(message.join(" "))),
             ["type", message @ ..] => Ok(BuiltInCommand::Type(message.join(" "))),
             ["pwd"] => Ok(BuiltInCommand::Pwd),
+            ["cd", path] => Ok(BuiltInCommand::Cd(path.to_string())),
             _ => Err(()),
         }
     }

@@ -4,6 +4,7 @@ mod enums;
 use enums::BuiltInCommand;
 use std::path::PathBuf;
 use std::{
+    env,
     fs,
     io::{self, Write},
     path::Path,
@@ -37,20 +38,25 @@ fn execute_command(command: &str) {
             } else {
                 match check_executable(c.as_str()) {
                     Ok(p) => println!("{} is {}", c, p.display()),
-                    Err(_) => println!("{}: not found", c),
+                    Err(_) => eprintln!("{}: not found", c),
                 }
             }
         }
         Ok(BuiltInCommand::Pwd) => {
-            let path = std::env::current_dir().unwrap_or_else(|e| {
+            let path = env::current_dir().unwrap_or_else(|e| {
                 eprintln!("Error getting current directory: {}", e);
                 PathBuf::new()
             });
             println!("{}", path.display());
         }
+        Ok(BuiltInCommand::Cd(path)) => {
+            env::set_current_dir(&path).unwrap_or_else(|e| {
+                eprintln!("{}: No such file or directory", path);
+            });
+        }
         Err(_) => {
             if let Err(_) = execute_external_command(command) {
-                println!("{}: command not found", command);
+                eprintln!("{}: command not found", command);
             }
         }
     }
@@ -78,7 +84,7 @@ fn execute_external_command(args: &str) -> Result<(), String> {
 }
 
 fn check_executable(command: &str) -> Result<PathBuf, String> {
-    let env_path = std::env::var("PATH").map_err(|_| "Failed to read PATH environment variable")?;
+    let env_path = env::var("PATH").map_err(|_| "Failed to read PATH environment variable")?;
 
     env_path
         .split(':')
