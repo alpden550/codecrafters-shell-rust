@@ -1,8 +1,11 @@
-mod enums;
 mod constants;
+mod enums;
 
 use enums::BuiltInCommand;
-use std::io::{self, Write};
+use std::{
+    io::{self, Write},
+    path::Path,
+};
 
 fn main() {
     repl();
@@ -23,6 +26,8 @@ fn repl() {
 }
 
 fn execute_command(command: &str) {
+    let path = std::env::var("PATH").unwrap();
+
     match command.parse::<BuiltInCommand>() {
         Ok(BuiltInCommand::Exit(code)) => std::process::exit(code),
         Ok(BuiltInCommand::Echo(message)) => println!("{}", message),
@@ -30,7 +35,13 @@ fn execute_command(command: &str) {
             if constants::BUILTINS.contains(&c.as_str()) {
                 println!("{} is a shell builtin", c);
             } else {
-                println!("{} not found", c);
+                let found = path.split(":").find(|dir| Path::new(dir).join(&c).exists());
+                match found {
+                    Some(dir) => {
+                        println!("{} is {}", c, Path::new(dir).join(&c).display());
+                    }
+                    None => println!("{}: not found", c),
+                }
             }
         }
         Err(_) => println!("{}: command not found", command),
