@@ -1,7 +1,9 @@
 mod constants;
 mod enums;
+mod helpers;
 
 use enums::BuiltInCommand;
+use helpers::parse_shell_words;
 use std::path::PathBuf;
 use std::{
     env, fs,
@@ -64,27 +66,30 @@ fn execute_command(command: &str) {
             });
         }
         Err(_) => {
-            if let Err(_) = execute_external_command(command) {
+            if execute_external_command(command).is_err() {
                 eprintln!("{}: command not found", command);
             }
         }
     }
 }
 
-fn execute_external_command(args: &str) -> Result<(), String> {
-    let mut parts = args.split_whitespace();
-    let command = parts.next().unwrap_or("");
-    let arguments: Vec<&str> = parts.collect();
+fn execute_external_command(command: &str) -> Result<(), String> {
+    let parts = parse_shell_words(command);
+    if parts.is_empty() {
+        return Err("empty command".to_string());
+    }
+    let cmd = parts[0].as_str();
+    let args = &parts[1..];
 
-    match check_executable(command) {
+    match check_executable(cmd) {
         Ok(path) => {
             let status = std::process::Command::new(path)
-                .args(arguments)
+                .args(args)
                 .status()
                 .expect("Failed to execute command");
 
             if !status.success() {
-                eprintln!("{}: command failed with status {}", command, status);
+                eprintln!("{}: command failed with status {}", cmd, status);
             }
             Ok(())
         }

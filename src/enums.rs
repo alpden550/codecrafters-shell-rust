@@ -1,11 +1,7 @@
 use std::fmt;
 use std::str::FromStr;
 
-#[allow(dead_code)]
-#[repr(u8)]
-pub enum StatusCodes {
-    Success = 0,
-}
+use crate::helpers::parse_shell_words;
 
 #[derive(Debug)]
 pub enum BuiltInCommand {
@@ -39,8 +35,8 @@ impl FromStr for BuiltInCommand {
                 let code = code.parse::<i32>().unwrap_or(0);
                 Ok(BuiltInCommand::Exit(code))
             }
-            ["echo", message @ ..] => Ok(BuiltInCommand::Echo(message.join(" "))),
-            ["type", message @ ..] => Ok(BuiltInCommand::Type(message.join(" "))),
+            ["echo", text] => Ok(BuiltInCommand::Echo(parse_shell_words(text).join(" "))),
+            ["type", text] => Ok(BuiltInCommand::Type(text.to_string())),
             ["pwd"] => Ok(BuiltInCommand::Pwd),
             ["cd", path] => Ok(BuiltInCommand::Cd(path.to_string())),
             _ => Err(()),
