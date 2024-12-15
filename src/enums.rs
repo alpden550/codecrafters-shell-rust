@@ -4,42 +4,53 @@ use std::str::FromStr;
 use crate::helpers::parse_shell_words;
 
 #[derive(Debug)]
-pub enum BuiltInCommand {
+pub enum Command {
     Exit(i32),
     Echo(String),
     Type(String),
     Pwd,
     Cd(String),
+    External(String, Vec<String>),
 }
 
-impl fmt::Display for BuiltInCommand {
+impl fmt::Display for Command {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            BuiltInCommand::Exit(c) => write!(f, "exit {c}"),
-            BuiltInCommand::Echo(s) => write!(f, "echo {s}"),
-            BuiltInCommand::Type(s) => write!(f, "type {s}"),
-            BuiltInCommand::Pwd => write!(f, "pwd"),
-            BuiltInCommand::Cd(s) => write!(f, "cd {s}"),
+            Command::Exit(c) => write!(f, "exit {c}"),
+            Command::Echo(s) => write!(f, "echo {s}"),
+            Command::Type(s) => write!(f, "type {s}"),
+            Command::Pwd => write!(f, "pwd"),
+            Command::Cd(s) => write!(f, "cd {s}"),
+            Command::External(c, args) => {
+                let args = args.join(" ");
+                write!(f, "{c} {args}")
+            }
         }
     }
 }
 
-impl FromStr for BuiltInCommand {
+impl FromStr for Command {
     type Err = ();
 
     fn from_str(command: &str) -> Result<Self, Self::Err> {
-        let parts: Vec<&str> = command.split_whitespace().collect();
+        let parts = parse_shell_words(command);
+        if parts.is_empty() {
+            return Err(());
+        }
+        let cmd = parts[0].as_str();
+        let args = &parts[1..];
 
-        match parts.as_slice() {
-            ["exit", code] => {
+        match (cmd, args) {
+            ("exit", [code]) => {
                 let code = code.parse::<i32>().unwrap_or(0);
-                Ok(BuiltInCommand::Exit(code))
-            }
-            ["echo", text] => Ok(BuiltInCommand::Echo(parse_shell_words(text).join(" "))),
-            ["type", text] => Ok(BuiltInCommand::Type(text.to_string())),
-            ["pwd"] => Ok(BuiltInCommand::Pwd),
-            ["cd", path] => Ok(BuiltInCommand::Cd(path.to_string())),
-            _ => Err(()),
+                Ok(Command::Exit(code))
+            },
+            ("exit", []) => Ok(Command::Exit(0)),
+            ("echo", text) => Ok(Command::Echo(text.join(" "))),
+            ("type", text) => Ok(Command::Type(text.join(" "))),
+            ("pwd", []) => Ok(Command::Pwd),
+            ("cd", [path]) => Ok(Command::Cd(path.to_string())),
+            _ => Ok(Command::External(cmd.to_string(), Vec::from(args))),
         }
     }
 }

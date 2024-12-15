@@ -1,6 +1,6 @@
-use std::{env, fs};
-use std::path::{Path, PathBuf};
 use shellwords::split;
+use std::path::{Path, PathBuf};
+use std::{env, fs};
 
 pub fn parse_shell_words(text: &str) -> Vec<String> {
     let words = split(text).unwrap_or_else(|e| {
@@ -31,14 +31,7 @@ pub fn check_executable(command: &str) -> Result<PathBuf, String> {
         .ok_or_else(|| format!("{}: command not found", command))
 }
 
-pub fn execute_external_command(command: &str) -> Result<(), String> {
-    let parts = parse_shell_words(command);
-    if parts.is_empty() {
-        return Err("empty command".to_string());
-    }
-    let cmd = parts[0].as_str();
-    let args = &parts[1..];
-
+pub fn execute_external_command(cmd: &str, args: Vec<String>) -> Result<(), String> {
     match check_executable(cmd) {
         Ok(path) => {
             let status = std::process::Command::new(path)
